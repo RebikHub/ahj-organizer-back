@@ -4,6 +4,7 @@ const cors = require('koa2-cors');
 const Router = require('koa-router');
 const router = new Router();
 const app = new Koa();
+const store = require('./storage');
 
 app.use(koaBody({
     text: true,
@@ -20,9 +21,20 @@ app.use(cors({
 }));
 
 router.get('/', async (ctx) => {
+  console.log(ctx.response);
+  console.log(ctx.request);
     ctx.status = 200;
 });
 
+router.post('/', async (ctx) => {
+  // console.log('response:', ctx.response);
+  console.log('request:', ctx.request.body);
+  console.log(store);
+  store.push(ctx.request.body)
+  ctx.status = 200;
+});
+
+console.log(store);
 
 app.use(router.routes()).use(router.allowedMethods());
 
