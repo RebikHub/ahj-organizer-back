@@ -26,7 +26,8 @@
     "koa-body": "^4.2.0",
     "koa-router": "^10.1.1",
     "koa-static": "^5.0.0",
-    "koa2-cors": "^2.0.6"
+    "koa2-cors": "^2.0.6",
+    "uuid": "^8.3.2"
   },
   "devDependencies": {
     "nodemon": "^2.0.15"
