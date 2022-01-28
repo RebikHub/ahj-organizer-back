@@ -49,42 +49,42 @@ router.post('/messages', async (ctx) => {
 })
 
 router.post('/uploads', async (ctx) => {
-  console.log(ctx.request.files.file);
-  const { file } = ctx.request.files;
+  console.log(ctx.request);
+  // const { file } = ctx.request.files;
 
-  if (ctx.request.files.file) {
-      const filename = uuidv4();
-      const link = await new Promise((resolve) => {
-        const oldPath = file.path;
-        const filename = uuidv4();
-        const newPath = path.join(uploads, filename);
-        const readStream = fs.createReadStream(oldPath);
-        const writeStream = fs.createWriteStream(newPath);
-        readStream.on('close', () => {
-          fs.unlink(oldPath, (err) => {
-              if (err) {
-                  console.log(err);
-              }
-          });
-          resolve(filename);
-        });
-        readStream.pipe(writeStream);
-      });
-  } else {
-      const url = ctx.request.body.url;
-      const filename = uuidv4();
-      https.get(url, (res) => {
-          const path = `${__dirname}/uploads/${filename}`; 
-          const filePath = fs.createWriteStream(path);
-          res.pipe(filePath);
-          filePath.on('finish',() => {
-              filePath.close();
-              console.log('Download Completed'); 
-          })
-      })
-  }
+  // if (ctx.request.files.file) {
+  //     const filename = uuidv4();
+  //     const link = await new Promise((resolve) => {
+  //       const oldPath = file.path;
+  //       const filename = uuidv4();
+  //       const newPath = path.join(uploads, filename);
+  //       const readStream = fs.createReadStream(oldPath);
+  //       const writeStream = fs.createWriteStream(newPath);
+  //       readStream.on('close', () => {
+  //         fs.unlink(oldPath, (err) => {
+  //             if (err) {
+  //                 console.log(err);
+  //             }
+  //         });
+  //         resolve(filename);
+  //       });
+  //       readStream.pipe(writeStream);
+  //     });
+  // } else {
+  //     const url = ctx.request.body.url;
+  //     const filename = uuidv4();
+  //     https.get(url, (res) => {
+  //         const path = `${__dirname}/uploads/${filename}`; 
+  //         const filePath = fs.createWriteStream(path);
+  //         res.pipe(filePath);
+  //         filePath.on('finish',() => {
+  //             filePath.close();
+  //             console.log('Download Completed'); 
+  //         })
+  //     })
+  // }
 
-  list = fs.readdirSync(uploads);
+  // list = fs.readdirSync(uploads);
   ctx.response.status = 200;
 });
 
