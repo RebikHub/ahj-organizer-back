@@ -49,7 +49,9 @@ router.post('/messages', async (ctx) => {
 })
 
 router.post('/uploads', async (ctx) => {
-  console.log(ctx.request);
+  console.log(ctx.request.files.file);
+
+  // const readStream = new fs.ReadStream(ctx.request)
   // const { file } = ctx.request.files;
 
   // if (ctx.request.files.file) {
