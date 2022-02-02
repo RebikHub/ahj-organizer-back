@@ -50,6 +50,17 @@ function fileToStore(file, id) {
   };
 }
 
+function deleteFileInStore(id) {
+  let index = null;
+  store.forEach((elem, i) => {
+    if (elem.idName === elem) {
+      index = i;
+    }
+  })
+  store.splice(index, 1);
+  console.log(store);
+}
+
 router.get('/store', async (ctx) => {
   ctx.response.body = JSON.stringify(store);
   ctx.status = 200;
@@ -62,27 +73,28 @@ router.get('/download', async (ctx) => {
   list.forEach((elem) => {
 
     if (elem === name) {
-      const path = `${__dirname}/uploads/${name}`; 
+      const path = `${__dirname}/uploads/${name}`;
 
-        // try {
-        //   if (fs.existsSync(path)) {
-        //     ctx.body = fs.createReadStream(path);
-        //     ctx.attachment(path);
-        //   } else {
-        //     ctx.throw(400, "Requested file not found on server");
-        //   }
-        // } catch(error) {
-        //   ctx.throw(500, error);
-        // }  
+        try {
+          if (fs.existsSync(path)) {
+            const readStream = fs.createReadStream(path);
+            ctx.attachment(name);
+            ctx.response.body = readStream;
+          } else {
+            ctx.throw(400, "Requested file not found on server");
+          }
+        } catch(error) {
+          ctx.throw(500, error);
+        }  
 
-      const readStream = fs.createReadStream(path);
+      // const readStream = fs.createReadStream(path);
       // ctx.header = ("Content-Type", "application/force-download")
       // ctx.header = ('Content-disposition', 'attachment; filename=' + name);
-      ctx.attachment(name)
+      // ctx.attachment(name)
       // ctx.body = readStream;
       // ctx.set('Content-disposition', 'attachment; filename=' + name)
       // ctx.set('Content-type', mimetype);
-      ctx.response.body = readStream;
+      // ctx.response.body = readStream;
     }
   });
   ctx.status = 200;
@@ -112,7 +124,7 @@ router.post('/uploads', async (ctx) => {
     writeStream.on('error', callback);
 
     readStream.on('close', () => {
-      console.log('close');
+      // console.log('close');
       fs.unlink(oldPath, callback);
       resolve(filename);
     });
@@ -126,12 +138,19 @@ router.post('/uploads', async (ctx) => {
   ctx.response.status = 200;
 });
 
-router.delete('/', async ctx => {
-      const name = ctx.request.query.id;
-      fs.unlinkSync(`./uploads/${name}`);
-      list = fs.readdirSync(uploads);
-      ctx.response.status = 200;
-      return
+router.get('/delete', async ctx => {
+  const name = ctx.request.querystring;
+  const path = `${__dirname}/uploads/${name}`;
+
+  deleteFileInStore(name);
+  if (fs.existsSync(path)) {
+    fs.unlinkSync(path);
+    list = fs.readdirSync(uploads);
+    ctx.response.status = 200;
+  } else {
+    ctx.throw(400, "Requested file not found on server");
+    ctx.response.status = 400;
+  }
 });
 
 // console.log(store);
