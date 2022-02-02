@@ -8,7 +8,6 @@ const path = require('path');
 const { v4: uuidv4 } = require('uuid');
 const router = new Router();
 const app = new Koa();
-const https = require('https');
 
 const store = require('./storage');
 
@@ -33,40 +32,57 @@ app.use(cors({
     allowMethods: ['GET', 'POST', 'DELETE']
 }));
 
+function fileToStore(file, id) {
+  let typeFile = null;
+
+  if (file.type.includes('image')) {
+    typeFile = 'image';
+  }
+  if (file.type.includes('text')) {
+    typeFile = 'text';
+  }
+  return {
+    type: typeFile,
+    name: file.name,
+    size: file.size,
+    idName: id,
+    date: new Date().getTime(),
+  };
+}
+
 router.get('/store', async (ctx) => {
-  // const method = ctx.request.query.method;
-  // console.log(method);
-  // if (method === 'imgList') {
-  //     list = fs.readdirSync(uploads);
-  //     ctx.response.body = JSON.stringify(list);
-  //     return;
-  // }
   ctx.response.body = JSON.stringify(store);
   ctx.status = 200;
 });
 
-router.post('/download', async (ctx) => {
-  const name = ctx.request.body;
+router.get('/download', async (ctx) => {
+  const name = ctx.request.querystring;
+  console.log(name);
   list = fs.readdirSync(uploads);
   list.forEach((elem) => {
-    console.log(elem === name);
+
     if (elem === name) {
-      fs.readFile(`./uploads/${name}`, (err, content) => {
-        if(err){
-          res.statusCode = 500;
-          res.end("Server error");
-      }else{
-          res.setHeader("Content-Type", "text/plain; charset=utf-8");
-          res.end(content);
-      }
-      })
-      // ctx.response.body = `http://loacalhost:3333/uploads/${name}`;
-  //       const dFile = fs.createWriteStream(`${name}`);
-  // const request = http.get(`http://loacalhost:3333/uploads/${name}`, (response) => {
-  // response.pipe(dFile);
-// });
-      ctx.response.body = JSON.stringify(elem);
-      // console.log(elem, list[i]);
+      const path = `${__dirname}/uploads/${name}`; 
+
+        // try {
+        //   if (fs.existsSync(path)) {
+        //     ctx.body = fs.createReadStream(path);
+        //     ctx.attachment(path);
+        //   } else {
+        //     ctx.throw(400, "Requested file not found on server");
+        //   }
+        // } catch(error) {
+        //   ctx.throw(500, error);
+        // }  
+
+      const readStream = fs.createReadStream(path);
+      // ctx.header = ("Content-Type", "application/force-download")
+      // ctx.header = ('Content-disposition', 'attachment; filename=' + name);
+      ctx.attachment(name)
+      // ctx.body = readStream;
+      // ctx.set('Content-disposition', 'attachment; filename=' + name)
+      // ctx.set('Content-type', mimetype);
+      ctx.response.body = readStream;
     }
   });
   ctx.status = 200;
@@ -79,20 +95,14 @@ router.post('/messages', async (ctx) => {
 })
 
 router.post('/uploads', async (ctx) => {
-  // const resp = JSON.parse(ctx.request.body);
-  // store.push(resp);
-  // console.log(store);
-
-
   const { file } = ctx.request.files;
+
   let name = null;
   const link = await new Promise((resolve, reject) => {
     const oldPath = file.path;
     const filename = uuidv4();
     name = filename;
-    console.log(filename);
     const newPath = path.join(uploads, filename);
-
     const callback = (error) => reject(error);
 
     const readStream = fs.createReadStream(oldPath);
@@ -111,49 +121,10 @@ router.post('/uploads', async (ctx) => {
   });
 
   list = fs.readdirSync(uploads);
+  store.push(fileToStore(file, name));
   ctx.response.body = name;
   ctx.response.status = 200;
 });
-
-// router.post('/uploads', async ctx => {
-//   const { file } = ctx.request.files;
-
-//   if (ctx.request.files.file) {
-//       const filename = uuidv4();
-//       const link = await new Promise((resolve) => {
-//         const oldPath = file.path;
-//         const filename = uuidv4();
-//         const newPath = path.join(uploads, filename);
-//         const readStream = fs.createReadStream(oldPath);
-//         const writeStream = fs.createWriteStream(newPath);
-//         readStream.on('close', () => {
-//           fs.unlink(oldPath, (err) => {
-//               if (err) {
-//                   console.log(err);
-//               }
-//           });
-//           resolve(filename);
-//         });
-//         readStream.pipe(writeStream);
-//       });
-//   } else {
-//       const url = ctx.request.body.url;
-//       const filename = uuidv4();
-//       console.log('http');
-//       https.get(url, (res) => {
-//           const path = `${__dirname}/uploads/${filename}`; 
-//           const filePath = fs.createWriteStream(path);
-//           res.pipe(filePath);
-//           filePath.on('finish',() => {
-//               filePath.close();
-//               console.log('Download Completed'); 
-//           })
-//       })
-//   }
-
-//   list = fs.readdirSync(uploads);
-//   ctx.response.status = 200;
-// })
 
 router.delete('/', async ctx => {
       const name = ctx.request.query.id;
