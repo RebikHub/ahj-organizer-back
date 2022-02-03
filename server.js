@@ -102,7 +102,9 @@ router.get('/download', async (ctx) => {
 
 router.post('/messages', async (ctx) => {
   const message = JSON.parse(ctx.request.body);
+  message.idName = uuidv4();
   store.push(message);
+  ctx.response.body = message.idName;
   ctx.status = 200;
 })
 
@@ -124,7 +126,6 @@ router.post('/uploads', async (ctx) => {
     writeStream.on('error', callback);
 
     readStream.on('close', () => {
-      // console.log('close');
       fs.unlink(oldPath, callback);
       resolve(filename);
     });
@@ -147,6 +148,7 @@ router.get('/delete', async ctx => {
     fs.unlinkSync(path);
     list = fs.readdirSync(uploads);
     ctx.response.status = 200;
+    // deleteFileInStore(name);
   } else {
     ctx.throw(400, "Requested file not found on server");
     ctx.response.status = 400;
