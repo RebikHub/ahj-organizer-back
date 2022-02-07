@@ -58,17 +58,50 @@ function deleteFileInStore(id) {
     }
   })
   store.splice(index, 1);
-  console.log(store);
 }
 
 router.get('/store', async (ctx) => {
-  ctx.response.body = JSON.stringify(store);
+  store.sort((a, b) => {
+    if (a.date > b.date) {
+      return 1;
+    }
+    if (a.date < b.date) {
+      return -1;
+    }
+    return 0;
+  });
+  const length = ctx.request.querystring;
+  const storeLength = store.length;
+
+  if (+length === storeLength) {
+    return ctx.status = 204;
+  }
+
+  if (store.length > 10) {
+    const index = (store.length - (+length + 10));
+    const respStore = [];
+
+    if (index >= 0) {
+      for (let i = +length; i < (+length + 10); i++) {
+        respStore.push(store[i]);
+      }
+      ctx.response.body = JSON.stringify(respStore);
+    } else {
+      for (let i = +length; i < store.length; i++) {
+        respStore.push(store[i]);
+      }
+      ctx.response.body = JSON.stringify(respStore);
+    }
+
+  } else {
+    ctx.response.body = JSON.stringify(store);
+  }
+
   ctx.status = 200;
 });
 
 router.get('/download', async (ctx) => {
   const name = ctx.request.querystring;
-  console.log(name);
   list = fs.readdirSync(uploads);
   list.forEach((elem) => {
 
@@ -86,15 +119,6 @@ router.get('/download', async (ctx) => {
         } catch(error) {
           ctx.throw(500, error);
         }  
-
-      // const readStream = fs.createReadStream(path);
-      // ctx.header = ("Content-Type", "application/force-download")
-      // ctx.header = ('Content-disposition', 'attachment; filename=' + name);
-      // ctx.attachment(name)
-      // ctx.body = readStream;
-      // ctx.set('Content-disposition', 'attachment; filename=' + name)
-      // ctx.set('Content-type', mimetype);
-      // ctx.response.body = readStream;
     }
   });
   ctx.status = 200;
@@ -148,14 +172,11 @@ router.get('/delete', async ctx => {
     fs.unlinkSync(path);
     list = fs.readdirSync(uploads);
     ctx.response.status = 200;
-    // deleteFileInStore(name);
   } else {
     ctx.throw(400, "Requested file not found on server");
     ctx.response.status = 400;
   }
 });
-
-// console.log(store);
 
 app.use(router.routes()).use(router.allowedMethods());
 
