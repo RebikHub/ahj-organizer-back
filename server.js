@@ -70,6 +70,8 @@ router.get('/store', async (ctx) => {
     }
     return 0;
   });
+
+  const reversed = store.reverse();
   const length = ctx.request.querystring;
   const storeLength = store.length;
 
@@ -77,24 +79,24 @@ router.get('/store', async (ctx) => {
     return ctx.status = 204;
   }
 
-  if (store.length > 10) {
-    const index = (store.length - (+length + 10));
+  if (reversed.length > 10) {
+    const index = (reversed.length - (+length + 10));
     const respStore = [];
 
     if (index >= 0) {
       for (let i = +length; i < (+length + 10); i++) {
-        respStore.push(store[i]);
+        respStore.push(reversed[i]);
       }
       ctx.response.body = JSON.stringify(respStore);
     } else {
-      for (let i = +length; i < store.length; i++) {
-        respStore.push(store[i]);
+      for (let i = +length; i < reversed.length; i++) {
+        respStore.push(reversed[i]);
       }
       ctx.response.body = JSON.stringify(respStore);
     }
 
   } else {
-    ctx.response.body = JSON.stringify(store);
+    ctx.response.body = JSON.stringify(reversed);
   }
 
   ctx.status = 200;
