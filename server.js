@@ -41,6 +41,12 @@ function fileToStore(file, id) {
   if (file.type.includes('text')) {
     typeFile = 'text';
   }
+  if (file.type.includes('audio')) {
+    typeFile = 'audio';
+  }
+  if (file.type.includes('video')) {
+    typeFile = 'video';
+  }
   return {
     type: typeFile,
     name: file.name,
