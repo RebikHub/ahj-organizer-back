@@ -11,6 +11,8 @@ const app = new Koa();
 
 const store = require('./storage');
 
+let pinId = null;
+
 const uploads = path.join(__dirname, '/uploads');
 
 app.use(koaStatic(uploads));
@@ -132,6 +134,17 @@ router.get('/download', async (ctx) => {
   ctx.status = 200;
 });
 
+router.post('/pin', async (ctx) => {
+  const id = ctx.request.body;
+  pinId = id;
+  ctx.status = 200;
+})
+
+router.get('/pin', async (ctx) => {
+  ctx.response.body = pinId;
+  ctx.status = 200;
+})
+
 router.post('/messages', async (ctx) => {
   const message = JSON.parse(ctx.request.body);
   message.idName = uuidv4();
@@ -171,18 +184,31 @@ router.post('/uploads', async (ctx) => {
   ctx.response.status = 200;
 });
 
+router.get('/removePin', async ctx => {
+  try {
+    const id = ctx.request.querystring;
+    if (id === pinId) {
+      pinId = null;
+      ctx.response.body = 'delete pinned';
+    }
+    ctx.response.status = 200;
+  } catch (error) {
+    ctx.throw(error);
+  }
+})
+
 router.get('/delete', async ctx => {
   const name = ctx.request.querystring;
   const path = `${__dirname}/uploads/${name}`;
-
-  deleteFileInStore(name);
-  if (fs.existsSync(path)) {
-    fs.unlinkSync(path);
-    list = fs.readdirSync(uploads);
+  try {
+    deleteFileInStore(name);
+    if (fs.existsSync(path)) {
+      fs.unlinkSync(path);
+      list = fs.readdirSync(uploads);
+    }
     ctx.response.status = 200;
-  } else {
-    ctx.throw(400, "Requested file not found on server");
-    ctx.response.status = 400;
+  } catch (error) {
+    ctx.throw(error);
   }
 });
 
