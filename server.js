@@ -8,12 +8,10 @@ const path = require('path');
 const { v4: uuidv4 } = require('uuid');
 const router = new Router();
 const app = new Koa();
-
+const { fileToStore, deleteFileInStore } = require('./addAndRemoveFile');
 const store = require('./storage');
-
-let pinId = null;
-
 const uploads = path.join(__dirname, '/uploads');
+let pinId = null;
 
 app.use(koaStatic(uploads));
 
@@ -33,40 +31,6 @@ app.use(cors({
     'Access-Control-Allow-Origin': true,
     allowMethods: ['GET', 'POST', 'DELETE']
 }));
-
-function fileToStore(file, id) {
-  let typeFile = null;
-
-  if (file.type.includes('image')) {
-    typeFile = 'image';
-  }
-  if (file.type.includes('text')) {
-    typeFile = 'text';
-  }
-  if (file.type.includes('audio')) {
-    typeFile = 'audio';
-  }
-  if (file.type.includes('video')) {
-    typeFile = 'video';
-  }
-  return {
-    type: typeFile,
-    name: file.name,
-    size: file.size,
-    idName: id,
-    date: new Date().getTime(),
-  };
-}
-
-function deleteFileInStore(id) {
-  let index = null;
-  store.forEach((elem, i) => {
-    if (elem.idName === elem) {
-      index = i;
-    }
-  })
-  store.splice(index, 1);
-}
 
 router.get('/store', async (ctx) => {
   store.sort((a, b) => {
