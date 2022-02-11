@@ -1,8 +1,29 @@
 const store = require('./storage');
+const fs = require('fs');
+const path = require('path');
+
+function clearTrashFiles(store, list) {
+  console.log('clear');
+  if (store.length > 0) {
+    for (let i = 1; i < list.length; i++) {
+      const findId = store.find((elem) => elem.idName === list[i]);
+      const path = `${__dirname}/uploads/${list[i]}`;
+      if (findId) {
+        fs.unlinkSync(path);
+      }
+    }
+  } else {
+    for (let i = 1; i < list.length; i++) {
+      const path = `${__dirname}/uploads/${list[i]}`;
+      console.log(list[i]);
+      fs.unlinkSync(path);
+    }
+  }
+}
 
 function fileToStore(file, id) {
   let typeFile = null;
-  console.log(file, id);
+
   if (file.type.includes('image')) {
     typeFile = 'image';
   }
@@ -26,7 +47,7 @@ function fileToStore(file, id) {
 
 function deleteFileInStore(id) {
   let index = null;
-  console.log(id);
+
   store.forEach((elem, i) => {
     if (elem.idName === id) {
       index = i;
@@ -35,4 +56,4 @@ function deleteFileInStore(id) {
   store.splice(index, 1);
 }
 
-module.exports = { fileToStore, deleteFileInStore };
+module.exports = { fileToStore, deleteFileInStore, clearTrashFiles };

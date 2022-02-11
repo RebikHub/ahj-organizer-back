@@ -8,7 +8,7 @@ const path = require('path');
 const { v4: uuidv4 } = require('uuid');
 const router = new Router();
 const app = new Koa();
-const { fileToStore, deleteFileInStore } = require('./addAndRemoveFile');
+const { fileToStore, deleteFileInStore, clearTrashFiles } = require('./addAndRemoveFile');
 const store = require('./storage');
 const uploads = path.join(__dirname, '/uploads');
 let pinId = null;
@@ -16,6 +16,8 @@ let pinId = null;
 app.use(koaStatic(uploads));
 
 let list = fs.readdirSync(uploads);
+
+clearTrashFiles(store, list);
 
 app.use(koaBody({
     text: true,
@@ -51,12 +53,12 @@ router.get('/store', async (ctx) => {
     return ctx.status = 204;
   }
 
-  if (reversed.length > 10) {
-    const index = (reversed.length - (+length + 10));
+  if (reversed.length > 13) {
+    const index = (reversed.length - (+length + 13));
     const respStore = [];
 
     if (index >= 0) {
-      for (let i = +length; i < (+length + 10); i++) {
+      for (let i = +length; i < (+length + 13); i++) {
         respStore.push(reversed[i]);
       }
       ctx.response.body = JSON.stringify(respStore);
